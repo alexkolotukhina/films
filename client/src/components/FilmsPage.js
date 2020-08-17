@@ -1,28 +1,21 @@
 import React, {Component} from "react"
-import {orderBy, find} from "lodash"
-import FilmsPage from "./FilmsPage.js"
-import HomePage from "../components/HomePage"
-import {Route} from "react-router-dom"
-import TopNavigation from "./TopNavigation"
-import api from "../api"
 // import {generate as id} from "shortid"
-// import FilmsList from "./films"
+import FilmsList from "./films"
+import {orderBy, find} from "lodash"
+import {Route} from "react-router-dom"
 // import {films} from "../data"
 // import axios from "axios"
-// import FilmsForm from "./forms/FilmsForm.js"
-// import RegistrationForm from "./forms/RegistrationForm.js"
-// import LoginForm from "./forms/LoginForm.js"
-
-const AppContext = React.createContext()
-export {AppContext}
+import FilmsForm from "./forms/FilmsForm.js"
+import {AppContext} from "./App.js"
+import api from "../api.js"
 
 // GET /api/films - get all films
 // POST /api/films - create film// PUT /api/films/_id - update film// DELETE /api/films/_id - delete film
-class App extends Component {
+class FilmsPage extends Component {
   state = {
     films: [],
-    showAddForm: false,
-    selectedFilm: {},
+    // showAddForm: false,
+    // selectedFilm: "",
     isLoading: true,
   }
 
@@ -79,12 +72,12 @@ class App extends Component {
       })),
     )
 
-  selectFilmForEdit = selectedFilm => {
-    this.setState({
-      selectedFilm,
-      showAddForm: true,
-    })
-  }
+  // selectFilmForEdit = selectedFilm => {
+  //   this.setState({
+  //     selectedFilm,
+  //     showAddForm: true,
+  //   })
+  // }
 
   // updateFilm = film =>
   //   this.setState(({films, showAddForm}) => ({
@@ -107,14 +100,69 @@ class App extends Component {
   saveFilm = film => (film._id ? this.updateFilm(film) : this.addFilm(film))
 
   render() {
+    const {films} = this.state
+    const numCol = this.props.location.pathname === "/films" ? "sixteen" : "ten"
+
     return (
-      <div className="ui container">
-        <TopNavigation />
-        <Route exact path="/" component={HomePage} />
-        <Route path="/films" component={FilmsPage} />
-      </div>
+      <AppContext.Provider
+        value={{
+          toggleFeatured: this.toggleFeatured,
+          // editFilm: this.selectFilmForEdit,
+          deleteFilm: this.deleteFilm,
+        }}
+      >
+        <div className="ui stackable grid">
+          <Route
+            path="/films/new"
+            render={() => (
+              <div className={"six whide column"}>
+                <FilmsForm submit={this.saveFilm} film={{}} />
+              </div>
+            )}
+          />
+
+          <Route
+            path="/films/edit/:_id"
+            render={props => (
+              <div className="six whide column">
+                <FilmsForm
+                  submit={this.saveFilm}
+                  film={find(this.state.films, {_id: props.match.params._id})}
+                />
+              </div>
+            )}
+          />
+
+          {/* {this.state.showAddForm && (
+            <div>
+              <div className={""}>
+                <FilmsForm
+                  submit={this.saveFilm}
+                  hideAddForm={this.hideAddForm}
+                  film={this.state.selectedFilm}
+                />
+              </div>
+            </div>
+          )} */}
+        </div>
+
+        <div className={`${numCol} wide column`}>
+          <div className={"six wide column"}>
+            {this.state.isLoading ? (
+              <div className="ui icon message">
+                <i className="notched circle loading icon" />
+                <div className="content">
+                  <div className="header">films loading</div>
+                </div>
+              </div>
+            ) : (
+              <FilmsList films={films} />
+            )}
+          </div>
+        </div>
+      </AppContext.Provider>
     )
   }
 }
 
-export default App
+export default FilmsPage

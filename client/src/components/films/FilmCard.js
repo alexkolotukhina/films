@@ -2,6 +2,7 @@ import React, {useContext, useState, Fragment} from "react"
 import Featured from "./Featured"
 import PropTypes from "prop-types"
 import {AppContext} from "../App"
+import {Link} from "react-router-dom"
 
 const FilmCard = React.memo(({film}) => {
   const [isShowDescription, toggleDescription] = useState(false)
@@ -58,12 +59,18 @@ const FilmCard = React.memo(({film}) => {
           </div>
         ) : (
           <div className="ui two buttons">
-            <span
+            <Link
+              to={`/films/edit/${film._id}`}
+              className="ui green basic button"
+            >
+              <i className="ui icon edit" />
+            </Link>
+            {/* <span
               className="ui green basic button"
               onClick={() => editFilm(film)}
             >
               <i className="ui icon edit" />
-            </span>
+            </span> */}
             <span className="ui red basic button" onClick={showConfirm}>
               <i className="ui icon trash" />
             </span>

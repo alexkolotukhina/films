@@ -1,33 +1,31 @@
 import React, {Component} from "react"
 import ReactImageFallback from "react-image-fallback"
+import {Link, Redirect} from "react-router-dom"
 import FormMessage from "./FormMessage"
-
 const initialData = {
   title: "",
   description: "",
-  direction: "",
+  director: "",
   duration: "",
   price: "",
   img: "",
-  featured: "",
+  featured: false,
   _id: null,
 }
-
 class FilmsForm extends Component {
   state = {
     data: initialData,
     errors: {},
+    isLoading: false,
+    redirect: false,
   }
-
   componentDidMount() {
     if (this.props.film.id) {
-      this.setState({data: this.props.films})
+      this.setState({data: this.props.film})
     }
   }
-
   static getDerivedStateFromProps(props, state) {
     const {film} = props
-
     if (film._id && film._id !== state.data._id) {
       return {
         data: film,
@@ -40,57 +38,51 @@ class FilmsForm extends Component {
         error: {},
       }
     }
-
     return null
   }
-
-  handleSubmit = event => {
-    event.preventDefault()
-
+  handleSubmit = e => {
+    e.preventDefault()
     const errors = this.validate(this.state.data)
     this.setState({errors})
     if (Object.keys(errors).length === 0) {
-      this.props.submit(this.state.data)
+      this.setState({isLoading: true})
+      this.props.submit(this.state.data).then(err =>
+        this.setState({
+          isLoading: false,
+          redirect: true,
+        }),
+      )
     }
   }
-
-  handleStringChange = event => {
+  handleStringChange = e =>
     this.setState({
-      data: {...this.state.data, [event.target.name]: event.target.value},
+      data: {...this.state.data, [e.target.name]: e.target.value},
     })
-  }
-
-  handleNumberChange = event => {
+  handleNumberChange = e =>
     this.setState({
-      data: {
-        ...this.state.data,
-        [event.target.name]: parseInt(event.target.value, 10),
-      },
+      data: {...this.state.data, [e.target.name]: parseInt(e.target.value, 10)},
     })
-  }
-  handleCheckboxChange = event => {
+  handleCheckboxChange = e =>
     this.setState({
-      data: {...this.state.data, [event.target.name]: event.target.checkes},
+      data: {...this.state.data, [e.target.name]: e.target.checked},
     })
-  }
   validate(data) {
     const errors = {}
-
-    if (!data.title) errors.title = "This field cant be blanck"
-    if (!data.description) errors.description = "This field cant be blanck"
-    if (!data.price) errors.price = "This field cant be blanck"
-    if (!data.director) errors.director = "This field cant be blanck"
-    if (!data.duration) errors.duration = "This field cant be blanck"
-
+    if (!data.title) errors.title = "This field cant be blank"
+    if (!data.description) errors.description = "This field cant be blank"
+    if (!data.price) errors.price = "This field cant be blank"
+    if (!data.director) errors.director = "This field cant be blank"
+    if (!data.duration) errors.duration = "This field cant be blank"
     if (parseInt(data.price) <= 0) errors.price = "Error price"
     if (parseInt(data.duration) <= 0) errors.duration = "Error duration"
-
     return errors
   }
   render() {
-    const {data, errors} = this.state
+    const {data, errors, isLoading, redirect} = this.state
+    const formClassName = isLoading ? "ui form loading" : "ui form"
     return (
-      <form className="ui form" onSubmit={this.handleSubmit}>
+      <form className={formClassName} onSubmit={this.handleSubmit}>
+        {redirect && <Redirect to="/films" />}
         <div className="ui  grid">
           <div className="twelve wide column">
             <div className={errors.title ? "field error" : "field"}>
@@ -103,7 +95,7 @@ class FilmsForm extends Component {
                 value={data.title}
                 onChange={this.handleStringChange}
               />
-              <FormMessage type={"error"}>{errors.title}</FormMessage>
+              <FormMessage type="error">{errors.title}</FormMessage>
             </div>
             <div className={errors.description ? "field error" : "field"}>
               <label>Film description</label>
@@ -114,35 +106,31 @@ class FilmsForm extends Component {
                 onChange={this.handleStringChange}
                 value={data.description}
               />
-              <FormMessage type={"error"}>{errors.description}</FormMessage>
+              <FormMessage type="error">{errors.description}</FormMessage>
             </div>
           </div>
-
-          <div className="four wide column">
+          <div className="four wide column field">
             <ReactImageFallback
               src={data.img}
               fallbackImage="http://via.placeholder.com/250x250"
-              alt=""
-              className={"ui image"}
-            />
-            {/* {data.img ? (
-              <img src={data.img} className="ui image" />
-            ) : (
-              <img
-                src="http://via.placeholder.com/250x250"
-                className="ui image"
-              />
-            )} */}
-            <input
-              type="text"
-              name="img"
-              id="img"
-              placeholder="img"
-              onChange={this.handleStringChange}
-              value={data.img}
+              alt="thumbnail"
+              className="ui image"
             />
           </div>
-
+          <div className="twelve wide column">
+            <div className={errors.img ? "field error" : "field"}>
+              <label>Image</label>
+              <input
+                value={data.img}
+                onChange={this.handleStringChange}
+                type="text"
+                name="img"
+                id="img"
+                placeholder="img"
+              />
+              <FormMessage>{errors.img}</FormMessage>
+            </div>
+          </div>
           <div className="six wide column field">
             <div className={errors.director ? "field error" : "field"}>
               <label>Director</label>
@@ -154,7 +142,7 @@ class FilmsForm extends Component {
                 onChange={this.handleStringChange}
                 value={data.director}
               />
-              <FormMessage type={"error"}>{errors.director}</FormMessage>
+              <FormMessage type="error">{errors.director}</FormMessage>
             </div>
           </div>
           <div className="six wide column field">
@@ -168,7 +156,7 @@ class FilmsForm extends Component {
                 value={data.duration}
                 onChange={this.handleNumberChange}
               />
-              <FormMessage type={"error"}>{errors.duration}</FormMessage>
+              <FormMessage type="error">{errors.duration}</FormMessage>
             </div>
           </div>
           <div className="six wide column field">
@@ -182,7 +170,7 @@ class FilmsForm extends Component {
                 value={data.price}
                 onChange={this.handleNumberChange}
               />
-              <FormMessage type={"error"}>{errors.price}</FormMessage>
+              <FormMessage type="error">{errors.price}</FormMessage>
             </div>
           </div>
           <div className="six wide column inline field">
@@ -201,13 +189,12 @@ class FilmsForm extends Component {
             Save
           </button>
           <div className="or" />
-          <span className="ui button" onClick={this.props.hideAddForm}>
+          <Link to="/films" className="ui button">
             Hide form
-          </span>
+          </Link>
         </div>
       </form>
     )
   }
 }
-
 export default FilmsForm
