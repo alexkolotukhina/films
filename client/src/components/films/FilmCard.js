@@ -6,7 +6,7 @@ import {Link} from "react-router-dom"
 
 const FilmCard = React.memo(({film}) => {
   const [isShowDescription, toggleDescription] = useState(false)
-  const {editFilm, deleteFilm} = useContext(AppContext)
+  const {deleteFilm} = useContext(AppContext)
   const [confirm, setConfirm] = useState(false)
   const showConfirm = () => setConfirm(true)
   const hideConfirm = () => setConfirm(false)
@@ -18,7 +18,7 @@ const FilmCard = React.memo(({film}) => {
             <i className="empty star icon" />
           </span>
           <div className="image">
-            <span className="ui green label ribbon">{film?.price}</span>
+            <span className="ui green label ribbon">$ {film?.price}</span>
             <Featured featured={film.featured} id={film._id} />
             <img src={film?.img} alt={film?.title} />
           </div>
@@ -42,6 +42,9 @@ const FilmCard = React.memo(({film}) => {
             onClick={() => toggleDescription(!isShowDescription)}
             className={`icon link eye ${isShowDescription ? "slash" : ""}`}
           />
+          <Link to={`/film/${film._id}`} className="link">
+            Film details
+          </Link>
         </div>
       </div>
       <div className="extra content">
@@ -65,12 +68,6 @@ const FilmCard = React.memo(({film}) => {
             >
               <i className="ui icon edit" />
             </Link>
-            {/* <span
-              className="ui green basic button"
-              onClick={() => editFilm(film)}
-            >
-              <i className="ui icon edit" />
-            </span> */}
             <span className="ui red basic button" onClick={showConfirm}>
               <i className="ui icon trash" />
             </span>

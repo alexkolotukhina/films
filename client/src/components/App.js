@@ -1,6 +1,7 @@
 import React, {Component} from "react"
 import {orderBy, find} from "lodash"
 import FilmsPage from "./FilmsPage.js"
+import FilmDetails from "../components/FilmDetails"
 import HomePage from "../components/HomePage"
 import {Route, Switch} from "react-router-dom"
 import TopNavigation from "./TopNavigation"
@@ -113,6 +114,7 @@ class App extends Component {
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route path="/films" component={FilmsPage} />
+          <Route path="/film/:id" component={FilmDetails} />
         </Switch>
       </div>
     )
