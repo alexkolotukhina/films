@@ -2,7 +2,7 @@ import React, {Component} from "react"
 // import {generate as id} from "shortid"
 import FilmsList from "./films"
 import {orderBy, find} from "lodash"
-import {Route} from "react-router-dom"
+import {Route, Switch} from "react-router-dom"
 // import {films} from "../data"
 // import axios from "axios"
 import FilmsForm from "./forms/FilmsForm.js"
@@ -14,8 +14,6 @@ import api from "../api.js"
 class FilmsPage extends Component {
   state = {
     films: [],
-    // showAddForm: false,
-    // selectedFilm: "",
     isLoading: true,
   }
 
@@ -112,26 +110,28 @@ class FilmsPage extends Component {
         }}
       >
         <div className="ui stackable grid">
-          <Route
-            path="/films/new"
-            render={() => (
-              <div className={"six whide column"}>
-                <FilmsForm submit={this.saveFilm} film={{}} />
-              </div>
-            )}
-          />
+          <Switch>
+            <Route
+              path="/films/new"
+              render={() => (
+                <div className={"six whide column"}>
+                  <FilmsForm submit={this.saveFilm} film={{}} />
+                </div>
+              )}
+            />
 
-          <Route
-            path="/films/edit/:_id"
-            render={props => (
-              <div className="six whide column">
-                <FilmsForm
-                  submit={this.saveFilm}
-                  film={find(this.state.films, {_id: props.match.params._id})}
-                />
-              </div>
-            )}
-          />
+            <Route
+              path="/films/edit/:_id"
+              render={props => (
+                <div className="six whide column">
+                  <FilmsForm
+                    submit={this.saveFilm}
+                    film={find(this.state.films, {_id: props.match.params._id})}
+                  />
+                </div>
+              )}
+            />
+          </Switch>
 
           {/* {this.state.showAddForm && (
             <div>

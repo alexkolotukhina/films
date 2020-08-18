@@ -2,7 +2,7 @@ import React, {Component} from "react"
 import {orderBy, find} from "lodash"
 import FilmsPage from "./FilmsPage.js"
 import HomePage from "../components/HomePage"
-import {Route} from "react-router-dom"
+import {Route, Switch} from "react-router-dom"
 import TopNavigation from "./TopNavigation"
 import api from "../api"
 // import {generate as id} from "shortid"
@@ -110,8 +110,10 @@ class App extends Component {
     return (
       <div className="ui container">
         <TopNavigation />
-        <Route exact path="/" component={HomePage} />
-        <Route path="/films" component={FilmsPage} />
+        <Switch>
+          <Route exact path="/" component={HomePage} />
+          <Route path="/films" component={FilmsPage} />
+        </Switch>
       </div>
     )
   }
