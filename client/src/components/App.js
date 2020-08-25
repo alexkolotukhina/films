@@ -1,120 +1,101 @@
 import React, {Component} from "react"
-import {orderBy, find} from "lodash"
-import FilmsPage from "./FilmsPage.js"
 import FilmDetails from "../components/FilmDetails"
-import HomePage from "../components/HomePage"
 import {Route, Switch} from "react-router-dom"
 import TopNavigation from "./TopNavigation"
-import api from "../api"
-// import {generate as id} from "shortid"
-// import FilmsList from "./films"
-// import {films} from "../data"
-// import axios from "axios"
-// import FilmsForm from "./forms/FilmsForm.js"
-// import RegistrationForm from "./forms/RegistrationForm.js"
-// import LoginForm from "./forms/LoginForm.js"
+import {Async, lazyImport} from "./Async"
+import {setAutHeader} from "../utils"
+import jwtDecode from "jwt-decode"
 
 const AppContext = React.createContext()
 export {AppContext}
 
-// GET /api/films - get all films
-// POST /api/films - create film// PUT /api/films/_id - update film// DELETE /api/films/_id - delete film
+const HomePage = Async(lazyImport("./HomePage"))
+const FilmsPage = Async(lazyImport("./FilmsPage"))
+const SignupPage = Async(lazyImport("./SignupPage"))
+const LoginPage = Async(lazyImport("./LoginPage"))
 class App extends Component {
   state = {
-    films: [],
-    showAddForm: false,
-    selectedFilm: {},
-    isLoading: true,
+    user: {
+      token: null,
+      role: "user",
+    },
+    message: "",
   }
 
   componentDidMount() {
-    api.films.fetchAll().then(films =>
+    if (localStorage.filmsToken) {
       this.setState({
-        films: this.sortFilms(films),
-        isLoading: false,
-      }),
-    )
+        user: {
+          token: localStorage.filmsToken,
+          role: jwtDecode(localStorage.filmsToken).user.role,
+        },
+      })
+      setAutHeader(localStorage.filmsToken)
+    }
   }
 
-  sortFilms = films => orderBy(films, ["featured", "title"], ["desc", "asc"])
-
-  toggleFeatured = id => {
-    const film = find(this.state.films, {_id: id})
-    return this.updateFilm({...film, featured: !film.featured})
-    // this.setState(({films}) => ({
-    //   films: this.sortFilms(
-    //     films.map(item =>
-    //       item._id === id ? {...item, featured: !item.featured} : item,
-    //     ),
-    //   ),
-  }
-
-  showAddForm = () => this.setState({showAddForm: true, selectedFilm: {}})
-  hideAddForm = () => this.setState({showAddForm: false, selectedFilm: {}})
-
-  // addFilm = film =>
-  //   this.setState(({films, showAddForm}) => ({
-  //     films: this.sortFilms([...films, {...film, _id: id()}]),
-  //     showAddForm: false,
-  //   }))
-
-  addFilm = filmData =>
-    api.films.create(filmData).then(film =>
-      this.setState(({films}) => ({
-        films: this.sortFilms([...films, {...film}]),
-        showAddForm: false,
-      })),
-    )
-
-  // deleteFilm = film =>
-  //   this.setState(({films, selectedFilm, showAddForm}) => ({
-  //     films: films.filter(item => item._id !== film._id),
-  //     selectedFilm: {},
-  //     showAddForm: false,
-  //   }))
-
-  deleteFilm = film =>
-    api.films.delete(film).then(() =>
-      this.setState(({films}) => ({
-        films: this.sortFilms(films.filter(item => item._id !== film._id)),
-      })),
-    )
-
-  selectFilmForEdit = selectedFilm => {
+  login = token => {
     this.setState({
-      selectedFilm,
-      showAddForm: true,
+      user: {
+        token,
+        role: jwtDecode(token).user.role,
+      },
     })
+    localStorage.filmsToken = token
+    setAutHeader(token)
   }
 
-  // updateFilm = film =>
-  //   this.setState(({films, showAddForm}) => ({
-  //     films: this.sortFilms(
-  //       films.map(item => (item._id === film._id ? film : item)),
-  //     ),
-  //     showAddForm: false,
-  //   }))
+  logout = () => {
+    this.setState({user: {token: null, role: "user"}})
+    setAutHeader()
+    delete localStorage.filmsToken
+  }
 
-  updateFilm = filmData =>
-    api.films.update(filmData).then(film =>
-      this.setState(({films}) => ({
-        films: this.sortFilms(
-          films.map(item => (item._id === film._id ? film : item)),
-        ),
-        showAddForm: false,
-      })),
-    )
-
-  saveFilm = film => (film._id ? this.updateFilm(film) : this.addFilm(film))
+  setMessage = message => this.setState({message})
 
   render() {
+    const {user, message} = this.state
+    const isUserAdmin = this.state.user.role === "admin"
+
     return (
       <div className="ui container">
-        <TopNavigation />
+        <TopNavigation
+          logout={this.logout}
+          isAuth={user.token}
+          isAdmin={isUserAdmin}
+        />
+
+        {/* {message && (
+          <div className={"ui info message"}>
+            <i className={"close icon"} onClick={() => this.setMessage("")} />
+            {message}
+          </div>
+        )} */}
+
+        {message && (
+          <div className={"ui info message"}>
+            <i className={"close icon"} onClick={() => this.setMessage("")} />
+            {message}
+          </div>
+        )}
+
         <Switch>
           <Route exact path="/" component={HomePage} />
-          <Route path="/films" component={FilmsPage} />
+          <Route
+            path="/films"
+            render={props => <FilmsPage {...props} user={this.state.user} />}
+          />
           <Route path="/film/:id" component={FilmDetails} />
+          <Route
+            path="/singup"
+            render={props => (
+              <SignupPage {...props} setMessage={this.setMessage}></SignupPage>
+            )}
+          />
+          <Route
+            path="/login"
+            render={props => <LoginPage {...props} login={this.login} />}
+          />
         </Switch>
       </div>
     )

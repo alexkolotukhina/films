@@ -1,10 +1,7 @@
 import React, {Component} from "react"
-// import {generate as id} from "shortid"
 import FilmsList from "./films"
 import {orderBy, find} from "lodash"
-import {Route, Switch} from "react-router-dom"
-// import {films} from "../data"
-// import axios from "axios"
+import {Route, Switch, Redirect} from "react-router-dom"
 import FilmsForm from "./forms/FilmsForm.js"
 import {AppContext} from "./App.js"
 import api from "../api.js"
@@ -31,22 +28,10 @@ class FilmsPage extends Component {
   toggleFeatured = id => {
     const film = find(this.state.films, {_id: id})
     return this.updateFilm({...film, featured: !film.featured})
-    // this.setState(({films}) => ({
-    //   films: this.sortFilms(
-    //     films.map(item =>
-    //       item._id === id ? {...item, featured: !item.featured} : item,
-    //     ),
-    //   ),
   }
 
   showAddForm = () => this.setState({showAddForm: true, selectedFilm: {}})
   hideAddForm = () => this.setState({showAddForm: false, selectedFilm: {}})
-
-  // addFilm = film =>
-  //   this.setState(({films, showAddForm}) => ({
-  //     films: this.sortFilms([...films, {...film, _id: id()}]),
-  //     showAddForm: false,
-  //   }))
 
   addFilm = filmData =>
     api.films.create(filmData).then(film =>
@@ -56,34 +41,12 @@ class FilmsPage extends Component {
       })),
     )
 
-  // deleteFilm = film =>
-  //   this.setState(({films, selectedFilm, showAddForm}) => ({
-  //     films: films.filter(item => item._id !== film._id),
-  //     selectedFilm: {},
-  //     showAddForm: false,
-  //   }))
-
   deleteFilm = film =>
     api.films.delete(film).then(() =>
       this.setState(({films}) => ({
         films: this.sortFilms(films.filter(item => item._id !== film._id)),
       })),
     )
-
-  // selectFilmForEdit = selectedFilm => {
-  //   this.setState({
-  //     selectedFilm,
-  //     showAddForm: true,
-  //   })
-  // }
-
-  // updateFilm = film =>
-  //   this.setState(({films, showAddForm}) => ({
-  //     films: this.sortFilms(
-  //       films.map(item => (item._id === film._id ? film : item)),
-  //     ),
-  //     showAddForm: false,
-  //   }))
 
   updateFilm = filmData =>
     api.films.update(filmData).then(film =>
@@ -105,45 +68,37 @@ class FilmsPage extends Component {
       <AppContext.Provider
         value={{
           toggleFeatured: this.toggleFeatured,
-          // editFilm: this.selectFilmForEdit,
           deleteFilm: this.deleteFilm,
+          user: this.props.user,
         }}
       >
         <div className="ui stackable grid">
-          <Switch>
-            <Route
-              path="/films/new"
-              render={() => (
-                <div className={"six whide column"}>
-                  <FilmsForm submit={this.saveFilm} film={{}} />
-                </div>
-              )}
-            />
+          {this.props.user.role === "admin" ? (
+            <Switch>
+              <Route
+                path="/films/new"
+                render={() => (
+                  <div className={"six whide column"}>
+                    <FilmsForm submit={this.saveFilm} film={{}} />
+                  </div>
+                )}
+              />
 
-            <Route
-              path="/films/edit/:_id"
-              render={props => (
-                <div className="six whide column">
-                  <FilmsForm
-                    submit={this.saveFilm}
-                    film={find(this.state.films, {_id: props.match.params._id})}
-                  />
-                </div>
-              )}
-            />
-          </Switch>
-
-          {/* {this.state.showAddForm && (
-            <div>
-              <div className={""}>
-                <FilmsForm
-                  submit={this.saveFilm}
-                  hideAddForm={this.hideAddForm}
-                  film={this.state.selectedFilm}
-                />
-              </div>
-            </div>
-          )} */}
+              <Route
+                path="/films/edit/:_id"
+                render={props => (
+                  <div className="six whide column">
+                    <FilmsForm
+                      submit={this.saveFilm}
+                      film={find(films, {_id: props.match.params._id}) || {}}
+                    />
+                  </div>
+                )}
+              />
+            </Switch>
+          ) : (
+            <Route path="/films/*" render={() => <Redirect to="/films" />} />
+          )}
         </div>
 
         <div className={`${numCol} wide column`}>

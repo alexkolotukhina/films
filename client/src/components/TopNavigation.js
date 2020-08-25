@@ -3,15 +3,7 @@ import PropTypes from "prop-types"
 
 import {NavLink} from "react-router-dom"
 
-const TopNavigation = ({showAddForm}) => (
-  // <div className={"ui secondary pointing menu"}>
-  //   <a href="/" className={"item"}>
-  //     Home
-  //   </a>
-  //   <a href="#" className={"item"} onClick={showAddForm}>
-  //     <i className={"icon plus"}>Add</i>
-  //   </a>
-  // </div>
+const TopNavigation = ({logout, isAuth, isAdmin}) => (
   <div className={"ui secondary pointing menu"}>
     <NavLink exact to="/" className={"item"}>
       Home
@@ -19,9 +11,28 @@ const TopNavigation = ({showAddForm}) => (
     <NavLink exact to="/films" className={"item"}>
       Films
     </NavLink>
-    <NavLink exact to="/films/new" className={"item"}>
-      <i className="icon plus"></i>Add new Films
-    </NavLink>
+    {isAdmin && (
+      <NavLink exact to="/films/new" className={"item"}>
+        <i className="icon plus"></i>Add new Films
+      </NavLink>
+    )}
+
+    {isAuth ? (
+      <div className={"right menu"}>
+        <span onClick={logout} className={"item"}>
+          Logout
+        </span>
+      </div>
+    ) : (
+      <div className={"right menu"}>
+        <NavLink to="/singup" className={"item"}>
+          Sing up
+        </NavLink>
+        <NavLink to="/login" className={"item"}>
+          Login
+        </NavLink>
+      </div>
+    )}
   </div>
 )
 

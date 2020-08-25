@@ -2,6 +2,8 @@ import React, {Component} from "react"
 import ReactImageFallback from "react-image-fallback"
 import {Link, Redirect} from "react-router-dom"
 import FormMessage from "./FormMessage"
+import PropTypes from "prop-types"
+
 const initialData = {
   title: "",
   description: "",
@@ -19,34 +21,40 @@ class FilmsForm extends Component {
     isLoading: false,
     redirect: false,
   }
+
   componentDidMount() {
     if (this.props.film.id) {
       this.setState({data: this.props.film})
     }
   }
+
   static getDerivedStateFromProps(props, state) {
     const {film} = props
+
     if (film._id && film._id !== state.data._id) {
       return {
         data: film,
         error: {},
       }
     }
+
     if (!film._id && state.data._id !== null) {
       return {
         data: initialData,
         error: {},
       }
     }
+
     return null
   }
+
   handleSubmit = e => {
     e.preventDefault()
     const errors = this.validate(this.state.data)
     this.setState({errors})
     if (Object.keys(errors).length === 0) {
       this.setState({isLoading: true})
-      this.props.submit(this.state.data).then(err =>
+      this.props.submit(this.state.data).then(() =>
         this.setState({
           isLoading: false,
           redirect: true,
@@ -197,4 +205,16 @@ class FilmsForm extends Component {
     )
   }
 }
+
+FilmsForm.propTypes = {
+  film: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+    director: PropTypes.string.isRequired,
+    img: PropTypes.string.isRequired,
+    duration: PropTypes.number.isRequired,
+    price: PropTypes.number.isRequired,
+    featured: PropTypes.bool.isRequired,
+  }).isRequired,
+}
+
 export default FilmsForm
